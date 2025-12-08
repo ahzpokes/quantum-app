@@ -62,19 +62,32 @@ def main():
     print(f"📥 Téléchargement historique (1 an) pour {len(tickers)} actions...")
     
     # 2. Téléchargement YFinance
+    # 2. Téléchargement YFinance
     # On télécharge tout le bloc. 'Adj Close' gère dividendes/splits.
-    data = yf.download(tickers, period="1y", interval="1d")['Adj Close']
+    # NOTE: auto_adjust=False force le retour de 'Adj Close'. 
+    # Sans ça, yfinance >= 0.2.x peut ne renvoyer que 'Close' (déjà ajusté).
+    data = yf.download(tickers, period="1y", interval="1d", auto_adjust=False)['Adj Close']
     
     # Nettoyage si données manquantes (ex: IPO récente < 1 an)
     data = data.dropna(axis=1, how='all') # Vire les colonnes vides
-    data = data.fillna(method='ffill').fillna(method='bfill') # Bouche les trous
+    data = data.ffill().bfill() # Bouche les trous (nouvelle syntaxe pandas)
     
     final_tickers = data.columns.tolist()
+    
+    if not final_tickers:
+        print("❌ Erreur : Aucune donnée disponible après téléchargement (ou toutes les colonnes sont vides).")
+        return
+
     print(f"✅ Données prêtes pour : {', '.join(final_tickers)}")
 
     # 3. Calcul Mathématique
     print("🧮 Optimisation de la Covariance en cours...")
-    optimal_weights = get_true_risk_parity_weights(data)
+    
+    try:
+        optimal_weights = get_true_risk_parity_weights(data)
+    except ValueError as e:
+        print(f"❌ Erreur lors de l'optimisation : {e}")
+        return
     
     print("\n🏆 RÉSULTATS RISK PARITY :")
     print(optimal_weights.sort_values(ascending=False).map(lambda x: f"{x:.2%}"))
