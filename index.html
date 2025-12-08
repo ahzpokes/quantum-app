@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Finance | Dashboard Portfolio</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Originale -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="logo-text">QUANTUM</div>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="#"><i class="fas fa-chart-pie"></i> Analyse</a></li>
+                <li><a href="#"><i class="fas fa-wallet"></i> Portefeuille</a></li>
+                <li><a href="#"><i class="fas fa-bell"></i> Alertes</a></li>
+                <li><a href="#"><i class="fas fa-history"></i> Historique</a></li>
+                <li><a href="#"><i class="fas fa-file-alt"></i> Rapports</a></li>
+                <li><a href="#"><i class="fas fa-cog"></i> Paramètres</a></li>
+            </ul>
+            <div style="margin-top: 40px; padding: 20px; background: rgba(255, 255, 255, 0.05); border-top: var(--border);">
+                <div style="font-size: 13px; color: #b0b7c3; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Portefeuille modèle</div>
+                <div style="font-size: 22px; font-weight: bold; margin-bottom: 5px; color: white;">+12.4%</div>
+                <div style="font-size: 12px; color: #28a745;">Performance annuelle</div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div>
+                    <h1>Dashboard Portfolio</h1>
+                    <p style="color: var(--gray); margin-top: 5px; font-size: 14px;">Suivi et analyse de vos investissements</p>
+                </div>
+                
+                <div class="header-controls">
+                    <div class="date-display">
+                        <i class="far fa-calendar-alt" style="margin-right: 8px;"></i>
+                        <span id="current-date">10 Juillet 2023</span>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="openAddStockModal()">
+                            <i class="fas fa-plus"></i> Ajouter
+                        </button>
+                        <button class="btn btn-secondary" onclick="refreshData()">
+                            <i class="fas fa-sync-alt"></i> Actualiser
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Summary Cards -->
+            <div class="section-title">Aperçu du portefeuille</div>
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div style="color: var(--gray); font-weight: 600; font-size: 13px;">Valeur totale</div>
+                    <div class="card-value" id="total-value">...</div>
+                    <div class="card-change change-up">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+2.4% (€ 2,920.50)</span>
+                    </div>
+                </div>
+                
+                <div class="summary-card">
+                    <div style="color: var(--gray); font-weight: 600; font-size: 13px;">Performance totale</div>
+                    <div class="card-value" id="total-performance">...</div>
+                    <div class="card-change change-up">
+                        <i class="fas fa-chart-line"></i>
+                        <span>+€ 19,210.30</span>
+                    </div>
+                </div>
+                
+                <div class="summary-card">
+                    <div style="color: var(--gray); font-weight: 600; font-size: 13px;">Dividendes annuels</div>
+                    <div class="card-value" id="dividends">...</div>
+                    <div class="card-change change-up">
+                        <i class="fas fa-coins"></i>
+                        <span>Rendement: 2.8%</span>
+                    </div>
+                </div>
+                
+                <div class="summary-card">
+                    <div style="color: var(--gray); font-weight: 600; font-size: 13px;">Risque du portefeuille</div>
+                    <div class="card-value" id="risk-level">Modéré</div>
+                    <div class="card-change change-up">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Diversification: 8 secteurs</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="section-title">Analyses et visualisations</div>
+            <div class="charts-section">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Répartition par secteur</div>
+                        <!-- MENU DÉROULANT SUPPRIMÉ ICI -->
+                    </div>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="allocationChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Performance historique</div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-secondary" style="padding: 6px 12px; font-size: 13px;">1M</button>
+                            <button class="btn-secondary" style="padding: 6px 12px; font-size: 13px;">6M</button>
+                            <button class="btn-primary" style="padding: 6px 12px; font-size: 13px;">1A</button>
+                        </div>
+                    </div>
+                    <div class="chart-canvas-wrapper" id="performanceChart"></div>
+                </div>
+            </div>
+
+            <!-- Additional Data Grid -->
+            <div class="data-grid" style="margin-bottom: 30px;">
+                <div class="data-item">
+                    <div class="data-label">Nombre d'actifs</div>
+                    <div class="data-value" id="asset-count">...</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">Plus forte hausse</div>
+                    <div class="data-value" style="color: var(--success);" id="top-gainer">AAPL (+12.3%)</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">Plus forte baisse</div>
+                    <div class="data-value" style="color: var(--danger);" id="top-loser">JPM (-1.2%)</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">Beta du portefeuille</div>
+                    <div class="data-value" id="portfolio-beta">1.12</div>
+                </div>
+            </div>
+
+            <!-- Portfolio Table -->
+            <div class="section-title">Détail des positions</div>
+            <div class="portfolio-table-container">
+                <div class="table-header">
+                    <div class="chart-title">Positions actives</div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" placeholder="Rechercher un actif..." style="padding: 8px 12px; width: 200px; font-size: 13px;">
+                        <select style="padding: 8px 12px; border: var(--border); font-size: 13px;">
+                            <option>Trier par: Performance</option>
+                            <option>Trier par: Poids</option>
+                            <option>Trier par: Valeur</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <table id="portfolio-table">
+                    <thead>
+                        <tr>
+                            <th>Actif</th>
+                            <th>Quantité</th>
+                            <th>Prix d'achat</th>
+                            <th>Prix actuel</th>
+                            <th>Valeur</th>
+                            <th>Performance</th>
+                            <th>Cible / Écart</th> <!-- Nouvelle colonne -->
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="portfolio-table-body">
+                        <!-- Rempli par JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Footer -->
+            <div style="margin-top: 30px; padding-top: 20px; border-top: var(--border); color: var(--gray); font-size: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span class="status-indicator"></span>
+                        <span>Système actif • Dernière actualisation: <span id="last-update">Il y a 2 minutes</span></span>
+                    </div>
+                    <div>
+                        <span style="margin-right: 20px;">© 2023 Quantum Finance</span>
+                        <a href="#" style="color: var(--gray); text-decoration: none; margin-right: 15px;">Conditions</a>
+                        <a href="#" style="color: var(--gray); text-decoration: none;">Confidentialité</a>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <!-- MODAL AVEC NOUVEAU CHAMP CIBLE -->
+    <div class="modal" id="addStockModal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: var(--border);">
+                <h2 style="font-size: 20px; font-weight: 600;">Ajouter une position</h2>
+                <button onclick="closeAddStockModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--gray);">&times;</button>
+            </div>
+            <form id="addStockForm">
+                <div style="display: grid; gap: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px;">Symbole (Ticker)</label>
+                        <input type="text" id="stock-symbol" placeholder="Ex: AAPL" required style="width: 100%; text-transform: uppercase;">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px;">Quantité</label>
+                            <input type="number" id="stock-quantity" required style="width: 100%;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px;">Prix d'achat (€)</label>
+                            <input type="number" step="0.01" id="stock-price" required style="width: 100%;">
+                        </div>
+                    </div>
+                    <!-- NOUVEAUX CHAMPS -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px;">Cible (%)</label>
+                            <input type="number" step="0.1" id="stock-target" placeholder="Ex: 5" required style="width: 100%;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px;">Catégorie</label>
+                            <select id="stock-category" required style="width: 100%;">
+                                <option value="Pilier">Pilier</option>
+                                <option value="Satellite">Satellite</option>
+                                <option value="Pari">Pari</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeAddStockModal()">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
