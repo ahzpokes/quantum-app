@@ -26,11 +26,13 @@ export default function Alertes() {
       const generatedAlerts = [];
 
       // 1. Calculate Portfolio Total
-      const totalValue = positions.reduce((sum, p) => sum + (p.shares * p.currentPrice), 0);
+      const totalValue = positions.reduce((sum, p) => sum + (Number(p.shares) * Number(p.current_price || p.buy_price)), 0);
 
       // 2. Risk Parity Analysis
       positions.forEach(pos => {
-        const currentValue = pos.shares * pos.currentPrice;
+        const currentPrice = Number(pos.current_price || pos.buy_price);
+        const shares = Number(pos.shares);
+        const currentValue = shares * currentPrice;
         const currentAllocation = totalValue > 0 ? (currentValue / totalValue) * 100 : 0;
         const targetAllocation = pos.risk_parity_target || 0;
 
