@@ -164,22 +164,32 @@ const AnalysisCard = ({ stock, onClick }) => {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div
-            style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '6px',
-              background: '#1a237e',
-              color: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 'bold',
-              fontSize: '10px',
-            }}
-          >
-            {stock.symbol.substring(0, 2)}
-          </div>
+          {stock.logo ? (
+            <img
+              src={stock.logo}
+              alt={stock.symbol}
+              width={32}
+              height={32}
+              style={{ borderRadius: '6px', objectFit: 'contain' }}
+            />
+          ) : (
+            <div
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '6px',
+                background: '#1a237e',
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 'bold',
+                fontSize: '10px',
+              }}
+            >
+              {stock.symbol.substring(0, 2)}
+            </div>
+          )}
           <div>
             <div style={{ fontWeight: 600 }}>{stock.symbol}</div>
             <div style={{ fontSize: '11px', color: 'var(--gray)' }}>{stock.name}</div>
