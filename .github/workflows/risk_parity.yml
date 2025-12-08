@@ -2,7 +2,7 @@ name: Risk Parity Analysis
 
 on:
   schedule:
-    - cron: '0 8 * * 1' # Every Monday at 8am
+    - cron: '0 8 * * *' # Every day at 8am
   workflow_dispatch: # Manual trigger
 
 jobs:
