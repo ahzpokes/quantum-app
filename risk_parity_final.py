@@ -332,9 +332,57 @@ def main():
         print(f"❌ Erreur sauvegarde Supabase: {e}")
         return
     
+    # 7. Process Watchlist
+    print("\n7️⃣  ÉTAPE 7 : Traitement de la Watchlist")
+    print("-" * 100)
+    
+    try:
+        watchlist_response = supabase.table('watchlist').select("id, symbol").execute()
+        watchlist_items = watchlist_response.data
+        
+        if watchlist_items:
+            watchlist_symbols = [w['symbol'] for w in watchlist_items]
+            # Filter out symbols already in positions
+            new_symbols = [s for s in watchlist_symbols if s not in tickers]
+            
+            if new_symbols:
+                print(f"📊 Analyse de {len(new_symbols)} actions de la watchlist...")
+                
+                # Download price data for watchlist
+                watchlist_prices = get_price_history(new_symbols, years=1)
+                
+                if watchlist_prices is not None and not watchlist_prices.empty:
+                    for item in watchlist_items:
+                        symbol = item['symbol']
+                        if symbol in watchlist_prices.columns:
+                            momentum = calculate_momentum(watchlist_prices, symbol)
+                            vol = calculate_volatility(watchlist_prices, symbol)
+                            metrics = get_fundamental_metrics(symbol)
+                            
+                            update_data = {
+                                'momentum_ratio': float(momentum),
+                                'volatility': float(vol * 100),
+                                'pe_ratio': float(metrics.get('PE', 0)) if metrics else 0,
+                                'growth_est': float(metrics.get('Growth', 0)) if metrics else 0,
+                                'beta': float(yf.Ticker(symbol).info.get('beta', 1) or 1),
+                                'updated_at': datetime.now().isoformat()
+                            }
+                            
+                            supabase.table('watchlist').update(update_data).eq('id', item['id']).execute()
+                            print(f"  ✅ {symbol}: Mom={momentum:.2f}, Vol={vol:.1%}")
+                
+                print(f"✅ {len(new_symbols)} actions watchlist mises à jour")
+            else:
+                print("ℹ️  Toutes les actions watchlist sont déjà dans le portefeuille")
+        else:
+            print("ℹ️  Watchlist vide")
+    except Exception as e:
+        print(f"⚠️  Erreur watchlist (non bloquante): {e}")
+    
     print("\n" + "=" * 100)
     print("✨ Pipeline terminé avec succès!")
     print("=" * 100)
 
 if __name__ == "__main__":
     main()
+

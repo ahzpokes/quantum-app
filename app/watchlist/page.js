@@ -365,56 +365,90 @@ const WatchlistCard = ({ symbol, onRemove, onClick }) => {
   );
 };
 
-// Risk Parity Card Component
-const RiskParityCard = ({ symbol, onRemove }) => {
+// Risk Parity Card Component - Uses data from Python script stored in Supabase
+const RiskParityCard = ({ symbol, onRemove, supabaseData }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`/api/quote?symbol=${symbol}`);
-        const yahooData = await res.json();
+        // First check if we have data from Supabase (from Python script)
+        if (supabaseData && supabaseData.momentum_ratio) {
+          // Get logo from Finnhub
+          let logo = null;
+          try {
+            const FINNHUB_KEY = process.env.NEXT_PUBLIC_FINNHUB_API_KEY;
+            const profileRes = await fetch(
+              `https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${FINNHUB_KEY}`
+            );
+            const profile = await profileRes.json();
+            logo = profile.logo;
+          } catch (e) {
+            console.error('Logo fetch error', e);
+          }
 
-        if (yahooData.error) throw new Error(yahooData.error);
+          // Get current price from Yahoo
+          const res = await fetch(`/api/quote?symbol=${symbol}`);
+          const yahooData = await res.json();
 
-        // Get logo
-        let logo = null;
-        try {
-          const FINNHUB_KEY = process.env.NEXT_PUBLIC_FINNHUB_API_KEY;
-          const profileRes = await fetch(
-            `https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${FINNHUB_KEY}`
-          );
-          const profile = await profileRes.json();
-          logo = profile.logo;
-        } catch (e) {
-          console.error('Logo fetch error', e);
+          setData({
+            symbol: symbol,
+            name: yahooData.name || symbol,
+            logo: logo,
+            currentPrice: yahooData.currentPrice || 0,
+            beta: supabaseData.beta || yahooData.beta || 1,
+            volatility: supabaseData.volatility || 0,
+            momentum: supabaseData.momentum_ratio || 1,
+            high52w: yahooData.high52w || 0,
+            low52w: yahooData.low52w || 0,
+            peRatio: supabaseData.pe_ratio || 0,
+            growthEst: supabaseData.growth_est || 0,
+            updatedAt: supabaseData.updated_at,
+            fromScript: true,
+          });
+        } else {
+          // Fallback to Yahoo API if no Supabase data
+          const res = await fetch(`/api/quote?symbol=${symbol}`);
+          const yahooData = await res.json();
+
+          if (yahooData.error) throw new Error(yahooData.error);
+
+          let logo = null;
+          try {
+            const FINNHUB_KEY = process.env.NEXT_PUBLIC_FINNHUB_API_KEY;
+            const profileRes = await fetch(
+              `https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${FINNHUB_KEY}`
+            );
+            const profile = await profileRes.json();
+            logo = profile.logo;
+          } catch (e) {
+            console.error('Logo fetch error', e);
+          }
+
+          const high52 = yahooData.high52w || 0;
+          const low52 = yahooData.low52w || 0;
+          const currentPrice = yahooData.currentPrice || 0;
+          const volatilityApprox =
+            high52 && low52 ? ((high52 - low52) / ((high52 + low52) / 2)) * 100 : 0;
+          const avg52w = (high52 + low52) / 2;
+          const momentumRatio = avg52w > 0 ? currentPrice / avg52w : 1;
+
+          setData({
+            symbol: yahooData.symbol,
+            name: yahooData.name,
+            logo: logo,
+            currentPrice: currentPrice,
+            beta: yahooData.beta || 1,
+            volatility: volatilityApprox,
+            momentum: momentumRatio,
+            high52w: high52,
+            low52w: low52,
+            peRatio: yahooData.peForward || 0,
+            growthEst: 0,
+            fromScript: false,
+          });
         }
-
-        // Calculate volatility approximation from 52w range
-        const high52 = yahooData.high52w || 0;
-        const low52 = yahooData.low52w || 0;
-        const currentPrice = yahooData.currentPrice || 0;
-        const volatilityApprox =
-          high52 && low52 ? ((high52 - low52) / ((high52 + low52) / 2)) * 100 : 0;
-
-        // Momentum: price vs 52w average
-        const avg52w = (high52 + low52) / 2;
-        const momentumRatio = avg52w > 0 ? currentPrice / avg52w : 1;
-
-        setData({
-          symbol: yahooData.symbol,
-          name: yahooData.name,
-          logo: logo,
-          currentPrice: currentPrice,
-          beta: yahooData.beta || 1,
-          volatility: volatilityApprox,
-          momentum: momentumRatio,
-          high52w: high52,
-          low52w: low52,
-          peForward: yahooData.peForward,
-          pegRatio: yahooData.pegRatio,
-        });
       } catch (err) {
         console.error(err);
       } finally {
@@ -649,6 +683,7 @@ const RiskParityCard = ({ symbol, onRemove }) => {
 
 export default function Watchlist() {
   const [watchlist, setWatchlist] = useState([]);
+  const [watchlistData, setWatchlistData] = useState({}); // Full data from Supabase
   const [search, setSearch] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedStock, setSelectedStock] = useState(null);
@@ -659,12 +694,19 @@ export default function Watchlist() {
   }, []);
 
   const fetchWatchlist = async () => {
-    const { data, error } = await supabase.from('watchlist').select('symbol');
+    // Fetch all columns including metrics from Python script
+    const { data, error } = await supabase.from('watchlist').select('*');
 
     if (error) {
       console.error('Error fetching watchlist:', error);
     } else {
       setWatchlist(data.map((item) => item.symbol));
+      // Create a map of symbol -> data for RiskParityCard
+      const dataMap = {};
+      data.forEach((item) => {
+        dataMap[item.symbol] = item;
+      });
+      setWatchlistData(dataMap);
     }
   };
 
@@ -799,16 +841,21 @@ export default function Watchlist() {
           )}
           {activeTab === 'growth'
             ? watchlist.map((symbol) => (
-                <WatchlistCard
-                  key={symbol}
-                  symbol={symbol}
-                  onRemove={removeFromWatchlist}
-                  onClick={setSelectedStock}
-                />
-              ))
+              <WatchlistCard
+                key={symbol}
+                symbol={symbol}
+                onRemove={removeFromWatchlist}
+                onClick={setSelectedStock}
+              />
+            ))
             : watchlist.map((symbol) => (
-                <RiskParityCard key={symbol} symbol={symbol} onRemove={removeFromWatchlist} />
-              ))}
+              <RiskParityCard
+                key={symbol}
+                symbol={symbol}
+                onRemove={removeFromWatchlist}
+                supabaseData={watchlistData[symbol]}
+              />
+            ))}
         </div>
       </main>
 
