@@ -18,17 +18,16 @@ export default function WhatIf() {
   const loadPositions = async () => {
     try {
       setLoading(true);
+      // Fetch basic columns that definitely exist
       const { data, error } = await supabase
         .from('positions')
-        .select(
-          'id, symbol, name, shares, buy_price, current_price, risk_parity_target, momentum_ratio, pe_ratio, growth_est, updated_at, logo, category'
-        );
+        .select('*');
 
       if (error) throw error;
 
       if (data) {
         // Get latest update timestamp
-        const dates = data.filter(d => d.updated_at).map(d => new Date(d.updated_at));
+        const dates = data.filter((d) => d.updated_at).map((d) => new Date(d.updated_at));
         if (dates.length > 0) {
           const latestDate = new Date(Math.max(...dates));
           setLastUpdated(latestDate.toLocaleString('fr-FR'));
@@ -107,7 +106,9 @@ export default function WhatIf() {
                 <strong>Volatility Floor (25%)</strong> et <strong>Filtre Momentum (MM200)</strong>.
               </div>
               <div style={{ fontSize: '12px', opacity: 0.7, marginTop: '5px' }}>
-                {lastUpdated ? `Dernière mise à jour : ${lastUpdated}` : 'Mise à jour via GitHub Actions'}
+                {lastUpdated
+                  ? `Dernière mise à jour : ${lastUpdated}`
+                  : 'Mise à jour via GitHub Actions'}
               </div>
             </div>
           </div>
@@ -157,8 +158,22 @@ export default function WhatIf() {
                 <div style={{ fontSize: '12px', color: 'var(--gray)', textTransform: 'uppercase' }}>
                   Momentum moyen
                 </div>
-                <div className="card-value" style={{ color: positions.reduce((sum, p) => sum + p.momentumRatio, 0) / positions.length >= 0.95 ? 'var(--success)' : 'var(--warning)' }}>
-                  {((positions.reduce((sum, p) => sum + p.momentumRatio, 0) / positions.length - 1) * 100).toFixed(1)}%
+                <div
+                  className="card-value"
+                  style={{
+                    color:
+                      positions.reduce((sum, p) => sum + p.momentumRatio, 0) / positions.length >=
+                        0.95
+                        ? 'var(--success)'
+                        : 'var(--warning)',
+                  }}
+                >
+                  {(
+                    (positions.reduce((sum, p) => sum + p.momentumRatio, 0) / positions.length -
+                      1) *
+                    100
+                  ).toFixed(1)}
+                  %
                 </div>
               </div>
             </div>
@@ -250,7 +265,12 @@ export default function WhatIf() {
                   >
                     <div>
                       <div style={{ color: 'var(--gray)' }}>Momentum</div>
-                      <div style={{ fontWeight: 600, color: pos.momentumRatio >= 0.95 ? 'var(--success)' : 'var(--danger)' }}>
+                      <div
+                        style={{
+                          fontWeight: 600,
+                          color: pos.momentumRatio >= 0.95 ? 'var(--success)' : 'var(--danger)',
+                        }}
+                      >
                         {pos.momentumRatio ? `${((pos.momentumRatio - 1) * 100).toFixed(1)}%` : '-'}
                       </div>
                     </div>
