@@ -85,6 +85,7 @@ const Sidebar: React.FC<SidebarProps & { mobileOpen?: boolean; onCloseMobile?: (
     { path: '/watchlist', icon: 'fas fa-star', label: 'Watchlist' },
     { path: '/analyse', icon: 'fas fa-chart-pie', label: 'Analyse' },
     { path: '/news', icon: 'far fa-newspaper', label: 'Actualités' },
+    { path: '/whatif', icon: 'fas fa-flask', label: 'What If' },
     { path: '/alertes', icon: 'fas fa-bell', label: 'Alertes' },
     { path: '/parametres', icon: 'fas fa-cog', label: 'Paramètres' },
   ];

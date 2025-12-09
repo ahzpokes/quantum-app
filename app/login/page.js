@@ -71,11 +71,7 @@ export default function Login() {
             />
           </div>
 
-          <button
-            type="submit"
-            className="btn btn-primary login-btn"
-            disabled={loading}
-          >
+          <button type="submit" className="btn btn-primary login-btn" disabled={loading}>
             {loading ? (
               <>
                 <i className="fas fa-spinner fa-spin"></i>
