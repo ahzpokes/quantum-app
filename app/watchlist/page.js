@@ -395,7 +395,8 @@ const RiskParityCard = ({ symbol, onRemove }) => {
         const high52 = yahooData.high52w || 0;
         const low52 = yahooData.low52w || 0;
         const currentPrice = yahooData.currentPrice || 0;
-        const volatilityApprox = high52 && low52 ? ((high52 - low52) / ((high52 + low52) / 2)) * 100 : 0;
+        const volatilityApprox =
+          high52 && low52 ? ((high52 - low52) / ((high52 + low52) / 2)) * 100 : 0;
 
         // Momentum: price vs 52w average
         const avg52w = (high52 + low52) / 2;
@@ -425,7 +426,15 @@ const RiskParityCard = ({ symbol, onRemove }) => {
 
   if (loading)
     return (
-      <div className="summary-card" style={{ minHeight: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div
+        className="summary-card"
+        style={{
+          minHeight: '180px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
         <i className="fas fa-spinner fa-spin" style={{ color: 'var(--gray)' }}></i>
       </div>
     );
@@ -499,11 +508,36 @@ const RiskParityCard = ({ symbol, onRemove }) => {
         <i className="fas fa-times"></i>
       </button>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px', marginTop: '10px' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          marginBottom: '15px',
+          marginTop: '10px',
+        }}
+      >
         {data.logo ? (
-          <img src={data.logo} alt={data.symbol} style={{ width: '32px', height: '32px', borderRadius: '6px', objectFit: 'contain' }} />
+          <img
+            src={data.logo}
+            alt={data.symbol}
+            style={{ width: '32px', height: '32px', borderRadius: '6px', objectFit: 'contain' }}
+          />
         ) : (
-          <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold' }}>
+          <div
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '6px',
+              background: 'var(--primary)',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '10px',
+              fontWeight: 'bold',
+            }}
+          >
             {symbol.substring(0, 2)}
           </div>
         )}
@@ -514,7 +548,15 @@ const RiskParityCard = ({ symbol, onRemove }) => {
       </div>
 
       {/* Risk Metrics */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '12px', marginBottom: '15px' }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '10px',
+          fontSize: '12px',
+          marginBottom: '15px',
+        }}
+      >
         <div>
           <div style={{ color: 'var(--gray)' }}>Beta</div>
           <div style={{ fontWeight: 600, color: isLowBeta ? 'var(--success)' : 'var(--danger)' }}>
@@ -531,17 +573,33 @@ const RiskParityCard = ({ symbol, onRemove }) => {
 
       {/* Momentum Bar */}
       <div style={{ marginBottom: '15px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '12px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginBottom: '4px',
+            fontSize: '12px',
+          }}
+        >
           <span style={{ color: 'var(--gray)' }}>Momentum (vs 52w avg)</span>
-          <span style={{ fontWeight: 600, color: isHighMomentum ? 'var(--success)' : 'var(--danger)' }}>
+          <span
+            style={{ fontWeight: 600, color: isHighMomentum ? 'var(--success)' : 'var(--danger)' }}
+          >
             {(data.momentum * 100 - 100).toFixed(1)}%
           </span>
         </div>
-        <div style={{ height: '8px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
+        <div
+          style={{
+            height: '8px',
+            background: 'var(--border-color)',
+            borderRadius: '4px',
+            overflow: 'hidden',
+          }}
+        >
           <div
             style={{
               height: '100%',
-              width: `${Math.min(Math.max((data.momentum - 0.8) / 0.4 * 100, 0), 100)}%`,
+              width: `${Math.min(Math.max(((data.momentum - 0.8) / 0.4) * 100, 0), 100)}%`,
               background: isHighMomentum ? 'var(--success)' : 'var(--danger)',
               borderRadius: '4px',
             }}
@@ -550,13 +608,27 @@ const RiskParityCard = ({ symbol, onRemove }) => {
       </div>
 
       {/* 52w Range */}
-      <div style={{ background: 'var(--table-hover)', padding: '10px', borderRadius: '8px', fontSize: '12px' }}>
+      <div
+        style={{
+          background: 'var(--table-hover)',
+          padding: '10px',
+          borderRadius: '8px',
+          fontSize: '12px',
+        }}
+      >
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
           <span>52w: ${data.low52w?.toFixed(0)}</span>
           <span style={{ fontWeight: 600 }}>${data.currentPrice?.toFixed(2)}</span>
           <span>${data.high52w?.toFixed(0)}</span>
         </div>
-        <div style={{ height: '6px', background: 'var(--border-color)', borderRadius: '3px', position: 'relative' }}>
+        <div
+          style={{
+            height: '6px',
+            background: 'var(--border-color)',
+            borderRadius: '3px',
+            position: 'relative',
+          }}
+        >
           <div
             style={{
               position: 'absolute',
@@ -649,7 +721,8 @@ export default function Watchlist() {
               padding: '12px 24px',
               border: 'none',
               background: 'none',
-              borderBottom: activeTab === 'growth' ? '3px solid var(--success)' : '3px solid transparent',
+              borderBottom:
+                activeTab === 'growth' ? '3px solid var(--success)' : '3px solid transparent',
               color: activeTab === 'growth' ? 'var(--success)' : 'var(--gray)',
               fontWeight: activeTab === 'growth' ? 600 : 400,
               cursor: 'pointer',
@@ -668,7 +741,8 @@ export default function Watchlist() {
               padding: '12px 24px',
               border: 'none',
               background: 'none',
-              borderBottom: activeTab === 'riskparity' ? '3px solid var(--primary)' : '3px solid transparent',
+              borderBottom:
+                activeTab === 'riskparity' ? '3px solid var(--primary)' : '3px solid transparent',
               color: activeTab === 'riskparity' ? 'var(--primary)' : 'var(--gray)',
               fontWeight: activeTab === 'riskparity' ? 600 : 400,
               cursor: 'pointer',
@@ -725,16 +799,16 @@ export default function Watchlist() {
           )}
           {activeTab === 'growth'
             ? watchlist.map((symbol) => (
-              <WatchlistCard
-                key={symbol}
-                symbol={symbol}
-                onRemove={removeFromWatchlist}
-                onClick={setSelectedStock}
-              />
-            ))
+                <WatchlistCard
+                  key={symbol}
+                  symbol={symbol}
+                  onRemove={removeFromWatchlist}
+                  onClick={setSelectedStock}
+                />
+              ))
             : watchlist.map((symbol) => (
-              <RiskParityCard key={symbol} symbol={symbol} onRemove={removeFromWatchlist} />
-            ))}
+                <RiskParityCard key={symbol} symbol={symbol} onRemove={removeFromWatchlist} />
+              ))}
         </div>
       </main>
 

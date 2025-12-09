@@ -9,6 +9,7 @@ export default function WhatIf() {
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [totalValue, setTotalValue] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   useEffect(() => {
     loadPositions();
@@ -20,12 +21,19 @@ export default function WhatIf() {
       const { data, error } = await supabase
         .from('positions')
         .select(
-          'id, symbol, name, shares, buy_price, current_price, risk_parity_target, logo, category'
+          'id, symbol, name, shares, buy_price, current_price, risk_parity_target, momentum_ratio, pe_ratio, growth_est, updated_at, logo, category'
         );
 
       if (error) throw error;
 
       if (data) {
+        // Get latest update timestamp
+        const dates = data.filter(d => d.updated_at).map(d => new Date(d.updated_at));
+        if (dates.length > 0) {
+          const latestDate = new Date(Math.max(...dates));
+          setLastUpdated(latestDate.toLocaleString('fr-FR'));
+        }
+
         // Calcul de la valeur totale
         const total = data.reduce((sum, pos) => {
           return sum + Number(pos.shares) * Number(pos.current_price || pos.buy_price);
@@ -38,6 +46,9 @@ export default function WhatIf() {
           const currentAllocation = total > 0 ? (currentValue / total) * 100 : 0;
           const targetAllocation = pos.risk_parity_target || 0;
           const diff = targetAllocation - currentAllocation;
+          const momentumRatio = pos.momentum_ratio || 1;
+          const peRatio = pos.pe_ratio || 0;
+          const growthEst = pos.growth_est || 0;
 
           return {
             ...pos,
@@ -45,6 +56,9 @@ export default function WhatIf() {
             currentAllocation,
             targetAllocation,
             diff,
+            momentumRatio,
+            peRatio,
+            growthEst,
           };
         });
 
@@ -89,11 +103,11 @@ export default function WhatIf() {
             <i className="fas fa-info-circle" style={{ fontSize: '24px' }}></i>
             <div>
               <div style={{ fontSize: '14px', opacity: 0.9 }}>
-                Cette page affiche les allocations calculées par l'algorithme{' '}
-                <strong>Risk Parity</strong> (Equal Risk Contribution).
+                Allocations calculées par l'algorithme <strong>Risk Parity</strong> avec{' '}
+                <strong>Volatility Floor (25%)</strong> et <strong>Filtre Momentum (MM200)</strong>.
               </div>
               <div style={{ fontSize: '12px', opacity: 0.7, marginTop: '5px' }}>
-                Dernière mise à jour via GitHub Actions
+                {lastUpdated ? `Dernière mise à jour : ${lastUpdated}` : 'Mise à jour via GitHub Actions'}
               </div>
             </div>
           </div>
@@ -139,6 +153,14 @@ export default function WhatIf() {
                   %
                 </div>
               </div>
+              <div className="summary-card">
+                <div style={{ fontSize: '12px', color: 'var(--gray)', textTransform: 'uppercase' }}>
+                  Momentum moyen
+                </div>
+                <div className="card-value" style={{ color: positions.reduce((sum, p) => sum + p.momentumRatio, 0) / positions.length >= 0.95 ? 'var(--success)' : 'var(--warning)' }}>
+                  {((positions.reduce((sum, p) => sum + p.momentumRatio, 0) / positions.length - 1) * 100).toFixed(1)}%
+                </div>
+              </div>
             </div>
 
             {/* Positions Grid */}
@@ -146,7 +168,7 @@ export default function WhatIf() {
               style={{
                 display: 'grid',
                 gap: '15px',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
               }}
             >
               {positions.map((pos) => (
@@ -211,6 +233,39 @@ export default function WhatIf() {
                       {pos.diff > 0 ? '+' : ''}
                       {pos.diff.toFixed(1)}%
                     </span>
+                  </div>
+
+                  {/* Metrics from Python script */}
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(3, 1fr)',
+                      gap: '10px',
+                      marginBottom: '15px',
+                      padding: '10px',
+                      background: 'var(--table-hover)',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                    }}
+                  >
+                    <div>
+                      <div style={{ color: 'var(--gray)' }}>Momentum</div>
+                      <div style={{ fontWeight: 600, color: pos.momentumRatio >= 0.95 ? 'var(--success)' : 'var(--danger)' }}>
+                        {pos.momentumRatio ? `${((pos.momentumRatio - 1) * 100).toFixed(1)}%` : '-'}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ color: 'var(--gray)' }}>PE Ratio</div>
+                      <div style={{ fontWeight: 600 }}>
+                        {pos.peRatio ? pos.peRatio.toFixed(1) : '-'}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ color: 'var(--gray)' }}>Growth Est.</div>
+                      <div style={{ fontWeight: 600, color: 'var(--success)' }}>
+                        {pos.growthEst ? `${(pos.growthEst * 100).toFixed(0)}%` : '-'}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Allocation Bars */}
@@ -280,6 +335,26 @@ export default function WhatIf() {
                       ></div>
                     </div>
                   </div>
+
+                  {/* Momentum indicator */}
+                  {pos.momentumRatio < 0.95 && (
+                    <div
+                      style={{
+                        padding: '8px',
+                        background: 'rgba(220, 53, 69, 0.1)',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        color: 'var(--danger)',
+                        marginBottom: '10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                      }}
+                    >
+                      <i className="fas fa-exclamation-triangle"></i>
+                      <span>Momentum négatif - Poids réduit de 50%</span>
+                    </div>
+                  )}
 
                   {/* Action suggestion */}
                   <div
