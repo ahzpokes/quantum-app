@@ -7,6 +7,7 @@ import { supabase } from '../../utils/supabaseClient';
 export default function Alertes() {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     checkAlerts();
@@ -26,10 +27,13 @@ export default function Alertes() {
       const generatedAlerts = [];
 
       // 1. Calculate Portfolio Total
-      const totalValue = positions.reduce((sum, p) => sum + (Number(p.shares) * Number(p.current_price || p.buy_price)), 0);
+      const totalValue = positions.reduce(
+        (sum, p) => sum + Number(p.shares) * Number(p.current_price || p.buy_price),
+        0
+      );
 
       // 2. Risk Parity Analysis
-      positions.forEach(pos => {
+      positions.forEach((pos) => {
         const currentPrice = Number(pos.current_price || pos.buy_price);
         const shares = Number(pos.shares);
         const currentValue = shares * currentPrice;
@@ -45,7 +49,7 @@ export default function Alertes() {
             level: 'danger', // or warning
             symbol: pos.symbol,
             message: `Allocation actuelle (${currentAllocation.toFixed(1)}%) loin de la cible (${targetAllocation.toFixed(1)}%). Écart de ${diff > 0 ? '+' : ''}${diff.toFixed(1)}%.`,
-            action: 'Rééquilibrer'
+            action: 'Rééquilibrer',
           });
         }
       });
@@ -54,7 +58,6 @@ export default function Alertes() {
       // generatedAlerts.push({ type: 'price', level: 'warning', symbol: 'AAPL', message: 'Approche du plus haut historique.' });
 
       setAlerts(generatedAlerts);
-
     } catch (error) {
       console.error('Error fetching alerts:', error);
     } finally {
@@ -64,9 +67,9 @@ export default function Alertes() {
 
   return (
     <div className="app-container">
-      <Sidebar />
+      <Sidebar mobileOpen={mobileMenuOpen} onCloseMobile={() => setMobileMenuOpen(false)} />
       <main className="main-content">
-        <Header />
+        <Header onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)} />
         <div className="section-title">Alertes actives</div>
 
         {loading ? (
@@ -75,18 +78,32 @@ export default function Alertes() {
           </div>
         ) : alerts.length === 0 ? (
           <div className="summary-card" style={{ textAlign: 'center', color: 'var(--success)' }}>
-            <i className="fas fa-check-circle" style={{ fontSize: '24px', marginBottom: '10px' }}></i>
+            <i
+              className="fas fa-check-circle"
+              style={{ fontSize: '24px', marginBottom: '10px' }}
+            ></i>
             <p>Aucune alerte. Votre portefeuille est équilibré.</p>
           </div>
         ) : (
           <div className="summary-cards" style={{ gridTemplateColumns: '1fr' }}>
             {alerts.map((alert, index) => (
-              <div key={index} className="summary-card" style={{ borderLeft: `4px solid var(--${alert.level === 'danger' ? 'danger' : 'warning'})` }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div
+                key={index}
+                className="summary-card"
+                style={{
+                  borderLeft: `4px solid var(--${alert.level === 'danger' ? 'danger' : 'warning'})`,
+                }}
+              >
+                <div
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                >
                   <div style={{ fontWeight: 600, fontSize: '16px' }}>
-                    {alert.type === 'risk_parity' ? 'Rééquilibrage requis' : 'Indicateur'} : {alert.symbol}
+                    {alert.type === 'risk_parity' ? 'Rééquilibrage requis' : 'Indicateur'} :{' '}
+                    {alert.symbol}
                   </div>
-                  <span className={`badge badge-${alert.level === 'danger' ? 'danger' : 'warning'}`}>
+                  <span
+                    className={`badge badge-${alert.level === 'danger' ? 'danger' : 'warning'}`}
+                  >
                     {alert.level === 'danger' ? 'Urgent' : 'Info'}
                   </span>
                 </div>
@@ -94,7 +111,10 @@ export default function Alertes() {
                   {alert.message}
                 </p>
                 {alert.action && (
-                  <button className="btn btn-primary" style={{ fontSize: '12px', padding: '6px 12px' }}>
+                  <button
+                    className="btn btn-primary"
+                    style={{ fontSize: '12px', padding: '6px 12px' }}
+                  >
                     {alert.action}
                   </button>
                 )}

@@ -36,12 +36,10 @@ const COLORS = [
 
 const ChartsSection: React.FC<ChartsSectionProps> = ({
   portfolio = [],
-  onPeriodChange = () => { },
+  onPeriodChange = () => {},
   selectedPeriod = '1M',
   className = '',
 }): JSX.Element => {
-
-
   const [historyData, setHistoryData] = useState<HistoryData[]>([]);
   const [loadingHistory, setLoadingHistory] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -209,9 +207,7 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
       {/* Graphique de répartition par secteur */}
       <div className="chart-container">
         <div className="chart-header">
-          <h3 className="chart-title">
-            Répartition par secteur
-          </h3>
+          <h3 className="chart-title">Répartition par secteur</h3>
           <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
             {portfolio.length} actif{portfolio.length > 1 ? 's' : ''}
           </span>
@@ -222,7 +218,15 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
             <Doughnut data={doughnutData} options={doughnutOptions} />
           </div>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--gray)' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              color: 'var(--gray)',
+            }}
+          >
             Aucune donnée disponible
           </div>
         )}
@@ -248,11 +252,30 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
         </div>
 
         {loadingHistory ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-            <div className="fas fa-spinner fa-spin" style={{ fontSize: '24px', color: 'var(--primary)' }}></div>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+            }}
+          >
+            <div
+              className="fas fa-spinner fa-spin"
+              style={{ fontSize: '24px', color: 'var(--primary)' }}
+            ></div>
           </div>
         ) : error ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--danger)' }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              color: 'var(--danger)',
+            }}
+          >
             <span style={{ fontSize: '24px', marginBottom: '8px' }}>⚠️</span>
             <p>{error}</p>
             <button
@@ -268,12 +291,20 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
             <Line data={lineData} options={lineOptions} />
           </div>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--gray)' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              color: 'var(--gray)',
+            }}
+          >
             {"Aucune donnée d'historique disponible"}
           </div>
         )}
       </div>
-    </div >
+    </div>
   );
 };
 

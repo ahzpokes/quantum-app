@@ -37,8 +37,6 @@ const Header: React.FC<
       </div>
 
       <div className="header-controls">
-
-
         <div className="date-display">
           <i className="far fa-calendar-alt" style={{ marginRight: '8px' }}></i>
           <span id="current-date">{dateStr}</span>
@@ -49,7 +47,7 @@ const Header: React.FC<
           )}
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           {onAddStock && (
             <button className="btn btn-primary" onClick={onAddStock} aria-label="Ajouter un actif">
               <i className="fas fa-plus"></i> Ajouter

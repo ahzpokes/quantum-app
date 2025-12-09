@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { SidebarProps } from '@/types';
+import { useAuth } from './AuthProvider';
 
 const Sidebar: React.FC<SidebarProps & { mobileOpen?: boolean; onCloseMobile?: () => void }> = ({
   activeTab,
@@ -17,6 +18,7 @@ const Sidebar: React.FC<SidebarProps & { mobileOpen?: boolean; onCloseMobile?: (
   const [performance, setPerformance] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const { user, signOut } = useAuth();
 
   useEffect(() => {
     // Load theme from localStorage on mount (client-side only)
@@ -68,6 +70,12 @@ const Sidebar: React.FC<SidebarProps & { mobileOpen?: boolean; onCloseMobile?: (
       setTheme(newTheme);
       localStorage.setItem('theme', newTheme);
       document.documentElement.setAttribute('data-theme', newTheme);
+    }
+  };
+
+  const handleLogout = async () => {
+    if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+      await signOut();
     }
   };
 
@@ -132,6 +140,19 @@ const Sidebar: React.FC<SidebarProps & { mobileOpen?: boolean; onCloseMobile?: (
           <span>{theme === 'light' ? 'Mode sombre' : 'Mode clair'}</span>
         </button>
       </div>
+
+      {user && (
+        <div className="sidebar-user">
+          <div className="user-info">
+            <i className="fas fa-user-circle"></i>
+            <span className="user-email">{user.email}</span>
+          </div>
+          <button onClick={handleLogout} className="logout-btn">
+            <i className="fas fa-sign-out-alt"></i>
+            <span>Déconnexion</span>
+          </button>
+        </div>
+      )}
     </aside>
   );
 };
