@@ -373,8 +373,16 @@ const RiskParityCard = ({ symbol, onRemove, supabaseData }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // First check if we have data from Supabase (from Python script)
-        if (supabaseData && supabaseData.momentum_ratio) {
+        // Check if we have data from Supabase (from Python script)
+        // Check for volatility or momentum_ratio being defined (not just truthy)
+        const hasSupabaseData = supabaseData && (
+          supabaseData.volatility !== undefined ||
+          supabaseData.momentum_ratio !== undefined ||
+          supabaseData.updated_at !== undefined
+        );
+
+        if (hasSupabaseData) {
+          console.log('Using Supabase data for', symbol, supabaseData);
           // Get logo from Finnhub
           let logo = null;
           try {
@@ -408,6 +416,7 @@ const RiskParityCard = ({ symbol, onRemove, supabaseData }) => {
             fromScript: true,
           });
         } else {
+          console.log('Fallback to Yahoo for', symbol);
           // Fallback to Yahoo API if no Supabase data
           const res = await fetch(`/api/quote?symbol=${symbol}`);
           const yahooData = await res.json();
@@ -456,7 +465,7 @@ const RiskParityCard = ({ symbol, onRemove, supabaseData }) => {
       }
     };
     fetchData();
-  }, [symbol]);
+  }, [symbol, supabaseData]);
 
   if (loading)
     return (
