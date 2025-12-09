@@ -4,8 +4,9 @@ import { StockData, PortfolioAsset } from '@/types';
 interface AddStockModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (stock: Omit<PortfolioAsset, 'id'>) => Promise<void>;
+  onAdd: (stock: any) => Promise<void>;
   initialData?: {
+    id?: string | number;
     symbol: string;
     shares: number;
     buyPrice: number;
@@ -153,9 +154,17 @@ const AddStockModal: React.FC<AddStockModalProps> = ({
     setError(null);
 
     try {
-      const stockData: Omit<PortfolioAsset, 'id'> = {
+      // Build stockData with fields expected by handleAddStock in portefeuille/page.js
+      const stockData = {
+        // Include id for updates
+        id: initialData?.id,
         symbol: formData.symbol,
         name: stockInfo?.name || formData.symbol,
+        // Use qty/price/target naming expected by handleAddStock
+        qty: formData.qty,
+        price: formData.price,
+        target: formData.target,
+        // Also include shares/buyPrice for compatibility
         shares: parseFloat(formData.qty),
         buyPrice: parseFloat(formData.price),
         currentPrice: stockInfo?.price || parseFloat(formData.price),
