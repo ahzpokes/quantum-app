@@ -19,9 +19,7 @@ export default function WhatIf() {
     try {
       setLoading(true);
       // Fetch basic columns that definitely exist
-      const { data, error } = await supabase
-        .from('positions')
-        .select('*');
+      const { data, error } = await supabase.from('positions').select('*');
 
       if (error) throw error;
 
@@ -163,7 +161,7 @@ export default function WhatIf() {
                   style={{
                     color:
                       positions.reduce((sum, p) => sum + p.momentumRatio, 0) / positions.length >=
-                        0.95
+                      0.95
                         ? 'var(--success)'
                         : 'var(--warning)',
                   }}

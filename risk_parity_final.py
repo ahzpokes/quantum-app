@@ -120,7 +120,13 @@ def get_price_history(tickers, years=1):
         start_date = (datetime.now() - timedelta(days=years*365)).strftime('%Y-%m-%d')
         
         print(f"📥 Téléchargement données depuis {start_date}...")
-        data = yf.download(tickers, start=start_date, progress=False)['Adj Close']
+        data = yf.download(tickers, start=start_date, progress=False)
+        
+        # Handle different yfinance versions - use Close (auto_adjust=True by default now)
+        if isinstance(data.columns, pd.MultiIndex):
+            data = data['Close'] if 'Close' in data.columns.get_level_values(0) else data['Adj Close']
+        else:
+            data = data['Close'] if 'Close' in data.columns else data
         
         if isinstance(data, pd.Series):
             data = data.to_frame()
