@@ -46,7 +46,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({
 
   // Type guard pour la catégorie
   const getValidCategory = (category: string): string => {
-    return category === 'Core' || category === 'Opportunity' || category === 'Satellite'
+    return category === 'Pilier' || category === 'Opportunity' || category === 'Satellite'
       ? category
       : 'Satellite';
   };
@@ -277,7 +277,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({
                 onChange={handleChange}
                 disabled={loading}
               >
-                <option value="Core">Core</option>
+                <option value="Pilier">Pilier</option>
                 <option value="Satellite">Satellite</option>
                 <option value="Opportunity">Opportunité</option>
               </select>

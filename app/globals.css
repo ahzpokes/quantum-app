@@ -1,5 +1,19 @@
 @import '@fortawesome/fontawesome-free/css/all.min.css';
 
+
+
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 /* --- CSS VARIABLES --- */
 :root {
   --primary: #1a237e;
@@ -90,6 +104,8 @@ body {
   color: var(--text-color);
   min-height: 100vh;
   overflow-x: hidden;
+  /* Force hide horizontal overflow */
+  width: 100%;
   font-weight: 400;
   line-height: 1.5;
   transition:
@@ -101,6 +117,11 @@ body {
   display: grid;
   grid-template-columns: 240px 1fr;
   min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
+  /* Strict constraint */
+  overflow-x: hidden;
+  /* Prevent grid blowout */
 }
 
 /* Sidebar */
@@ -589,6 +610,40 @@ tr:hover {
   border-radius: 3px;
 }
 
+/* Table Controls */
+.table-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  /* Allow wrapping on small screens */
+}
+
+.search-input {
+  padding: 8px 12px;
+  width: 200px;
+  font-size: 13px;
+}
+
+.sort-select {
+  padding: 8px 12px;
+  border: var(--border);
+  font-size: 13px;
+}
+
+@media (max-width: 480px) {
+  .table-controls {
+    width: 100%;
+  }
+
+  .search-input,
+  .sort-select {
+    width: 100%;
+    /* Full width on mobile */
+    margin-bottom: 5px;
+  }
+}
+
 /* Modal */
 .modal {
   display: none;
@@ -925,7 +980,10 @@ select:focus {
 
   .header-controls {
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-start;
+    /* Align left usually better for stacked controls */
+    flex-wrap: wrap;
+    gap: 10px;
   }
 
   .summary-cards {
@@ -935,14 +993,118 @@ select:focus {
   .chart-container {
     height: auto;
     min-height: 300px;
+    max-width: 100%;
+    /* Prevent chart overflow */
+    overflow: hidden;
+    /* Clip internal chart overflow */
   }
 
   .portfolio-table-container {
-    overflow-x: auto;
+    overflow-x: hidden;
+    /* Strict overflow control */
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    /* Remove border if it adds width */
+    background: transparent;
+    /* Remove background if needed */
+    box-shadow: none;
   }
 
   table {
-    min-width: 600px;
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    display: block;
+    margin: 0;
+    padding: 0;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody {
+    display: block;
+    width: 100%;
+  }
+
+  tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* 2 columns grid */
+    gap: 10px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  td {
+    display: flex;
+    flex-direction: column;
+    /* Stack label and value vertically for compactness */
+    justify-content: center;
+    align-items: flex-start;
+    /* Left align everything */
+    padding: 5px 0;
+    border-bottom: none;
+    /* Remove borders for cleaner grid */
+    text-align: left;
+    width: 100%;
+    word-break: break-word;
+  }
+
+  /* Labels styling */
+  td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--gray);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    margin-right: 0;
+  }
+
+  /* Full width cells */
+  .mobile-header-cell {
+    grid-column: 1 / -1;
+    /* Span full width */
+    flex-direction: row;
+    /* Keep icon and text side-by-side */
+    justify-content: flex-start;
+    /* Ensure left alignment */
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    margin-bottom: 5px;
+  }
+
+
+
+  .mobile-header-cell::before {
+    display: none;
+  }
+
+  .actions-cell {
+    grid-column: 1 / -1;
+    /* Span full width */
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+    margin-top: 5px;
+  }
+
+  .actions-cell::before {
+    display: none;
   }
 
   .btn {
@@ -964,7 +1126,76 @@ select:focus {
     font-size: 24px;
   }
 
+  /* Modal Mobile Optimizations */
+  .modal-overlay {
+    align-items: flex-start;
+    /* Permet le scroll si le modal est plus grand que l'écran */
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+
   .modal-content {
     padding: 20px;
+    width: 90%;
+    max-width: 360px;
+    /* Better fit for typical phone screens */
+    max-height: 90vh;
+    /* Laisse un peu d'espace */
+    overflow-y: auto;
+    /* Scroll interne si nécessaire */
+    border-radius: 12px;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+
+  /* Prevent iOS zoom on inputs */
+  .form-group input,
+  .form-group select {
+    font-size: 16px !important;
+    padding: 12px;
+    /* Plus facile à toucher */
+  }
+
+  .modal-overlay .form-row {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .modal-header {
+    margin-bottom: 20px;
+  }
+
+  .modal-header h2 {
+    font-size: 18px;
+  }
+
+  .close-btn {
+    font-size: 28px;
+    /* Plus grand pour le tactile */
+    padding: 5px 10px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 25px;
+  }
+
+  .modal-actions .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+    /* Boutons plus hauts */
+    font-size: 16px;
+  }
+
+  .modal-overlay .stock-info-preview {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    /* Fond subtil sur mobile */
+    border-radius: 8px;
   }
 }

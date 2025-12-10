@@ -101,5 +101,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signOut,
   };
 
+  // Handle SSR and initial load
+  // If we are on the login page, we can show content immediately (it's public)
+  // Otherwise, we strictly show the loader until auth is checked
+  const showContent = pathname === '/login' || (!loading && user);
+
+  if (!showContent) {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#0a0e27',
+          color: '#e2e8f0',
+          zIndex: 9999,
+        }}
+      >
+        <i
+          className="fas fa-spinner fa-spin"
+          style={{ fontSize: '48px', color: '#6366f1', marginBottom: '20px' }}
+        />
+        <div style={{ fontSize: '16px', opacity: 0.8 }}>Chargement...</div>
+      </div>
+    );
+  }
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

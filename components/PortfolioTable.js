@@ -41,15 +41,15 @@ const PortfolioTable = ({ portfolio, onDelete, onEdit }) => {
     <div className="portfolio-table-container">
       <div className="table-header">
         <div className="chart-title">Positions actives</div>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <div className="table-controls">
           <input
             type="text"
             placeholder="Rechercher un actif..."
-            style={{ padding: '8px 12px', width: '200px', fontSize: '13px' }}
+            className="search-input"
           />
           <select
             onChange={handleSortChange}
-            style={{ padding: '8px 12px', border: 'var(--border)', fontSize: '13px' }}
+            className="sort-select"
           >
             <option value="Défaut">Trier par: Défaut</option>
             <option value="Performance">Trier par: Performance</option>
@@ -92,7 +92,7 @@ const PortfolioTable = ({ portfolio, onDelete, onEdit }) => {
 
             return (
               <tr key={stock.id}>
-                <td>
+                <td data-label="Actif" className="mobile-header-cell">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     {stock.logo ? (
                       <Image
@@ -134,11 +134,11 @@ const PortfolioTable = ({ portfolio, onDelete, onEdit }) => {
                     </div>
                   </div>
                 </td>
-                <td style={{ fontWeight: 500 }}>{stock.shares}</td>
-                <td style={{ color: 'var(--gray)' }}>{stock.buyPrice.toFixed(1)} $</td>
-                <td style={{ fontWeight: 600 }}>{stock.currentPrice.toFixed(1)} $</td>
-                <td style={{ fontWeight: 600 }}>{value.toFixed(1)} $</td>
-                <td>
+                <td data-label="Quantité" style={{ fontWeight: 500 }}>{stock.shares}</td>
+                <td data-label="Prix d'achat" style={{ color: 'var(--gray)' }}>{stock.buyPrice.toFixed(1)} $</td>
+                <td data-label="Prix actuel" style={{ fontWeight: 600 }}>{stock.currentPrice.toFixed(1)} $</td>
+                <td data-label="Valeur" style={{ fontWeight: 600 }}>{value.toFixed(1)} $</td>
+                <td data-label="Performance">
                   <span className={`badge ${perf >= 0 ? 'badge-success' : 'badge-danger'}`}>
                     <i
                       className={`fas ${perf >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'}`}
@@ -147,7 +147,7 @@ const PortfolioTable = ({ portfolio, onDelete, onEdit }) => {
                     {Math.abs(perf).toFixed(2)}%
                   </span>
                 </td>
-                <td>
+                <td data-label="Cible / Écart">
                   <div style={{ fontSize: '12px' }}>
                     Cible: <b>{stock.targetPercent}%</b>
                   </div>
@@ -160,7 +160,7 @@ const PortfolioTable = ({ portfolio, onDelete, onEdit }) => {
                     <div style={{ fontSize: '11px', color: '#999' }}>OK ({weight.toFixed(1)}%)</div>
                   )}
                 </td>
-                <td>
+                <td data-label="Actions" className="actions-cell">
                   <button
                     onClick={() => onEdit(stock)}
                     style={{

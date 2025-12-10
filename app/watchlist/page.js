@@ -375,11 +375,11 @@ const RiskParityCard = ({ symbol, onRemove, supabaseData }) => {
       try {
         // Check if we have data from Supabase (from Python script)
         // Check for volatility or momentum_ratio being defined (not just truthy)
-        const hasSupabaseData = supabaseData && (
-          supabaseData.volatility !== undefined ||
-          supabaseData.momentum_ratio !== undefined ||
-          supabaseData.updated_at !== undefined
-        );
+        const hasSupabaseData =
+          supabaseData &&
+          (supabaseData.volatility !== undefined ||
+            supabaseData.momentum_ratio !== undefined ||
+            supabaseData.updated_at !== undefined);
 
         if (hasSupabaseData) {
           console.log('Using Supabase data for', symbol, supabaseData);
@@ -850,21 +850,21 @@ export default function Watchlist() {
           )}
           {activeTab === 'growth'
             ? watchlist.map((symbol) => (
-              <WatchlistCard
-                key={symbol}
-                symbol={symbol}
-                onRemove={removeFromWatchlist}
-                onClick={setSelectedStock}
-              />
-            ))
+                <WatchlistCard
+                  key={symbol}
+                  symbol={symbol}
+                  onRemove={removeFromWatchlist}
+                  onClick={setSelectedStock}
+                />
+              ))
             : watchlist.map((symbol) => (
-              <RiskParityCard
-                key={symbol}
-                symbol={symbol}
-                onRemove={removeFromWatchlist}
-                supabaseData={watchlistData[symbol]}
-              />
-            ))}
+                <RiskParityCard
+                  key={symbol}
+                  symbol={symbol}
+                  onRemove={removeFromWatchlist}
+                  supabaseData={watchlistData[symbol]}
+                />
+              ))}
         </div>
       </main>
 
