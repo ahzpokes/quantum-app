@@ -42,15 +42,8 @@ const PortfolioTable = ({ portfolio, onDelete, onEdit }) => {
       <div className="table-header">
         <div className="chart-title">Positions actives</div>
         <div className="table-controls">
-          <input
-            type="text"
-            placeholder="Rechercher un actif..."
-            className="search-input"
-          />
-          <select
-            onChange={handleSortChange}
-            className="sort-select"
-          >
+          <input type="text" placeholder="Rechercher un actif..." className="search-input" />
+          <select onChange={handleSortChange} className="sort-select">
             <option value="Défaut">Trier par: Défaut</option>
             <option value="Performance">Trier par: Performance</option>
             <option value="Poids">Trier par: Poids</option>
@@ -134,10 +127,18 @@ const PortfolioTable = ({ portfolio, onDelete, onEdit }) => {
                     </div>
                   </div>
                 </td>
-                <td data-label="Quantité" style={{ fontWeight: 500 }}>{stock.shares}</td>
-                <td data-label="Prix d'achat" style={{ color: 'var(--gray)' }}>{stock.buyPrice.toFixed(1)} $</td>
-                <td data-label="Prix actuel" style={{ fontWeight: 600 }}>{stock.currentPrice.toFixed(1)} $</td>
-                <td data-label="Valeur" style={{ fontWeight: 600 }}>{value.toFixed(1)} $</td>
+                <td data-label="Quantité" style={{ fontWeight: 500 }}>
+                  {stock.shares}
+                </td>
+                <td data-label="Prix d'achat" style={{ color: 'var(--gray)' }}>
+                  {stock.buyPrice.toFixed(1)} $
+                </td>
+                <td data-label="Prix actuel" style={{ fontWeight: 600 }}>
+                  {stock.currentPrice.toFixed(1)} $
+                </td>
+                <td data-label="Valeur" style={{ fontWeight: 600 }}>
+                  {value.toFixed(1)} $
+                </td>
                 <td data-label="Performance">
                   <span className={`badge ${perf >= 0 ? 'badge-success' : 'badge-danger'}`}>
                     <i

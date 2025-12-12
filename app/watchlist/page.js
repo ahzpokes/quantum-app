@@ -704,7 +704,10 @@ export default function Watchlist() {
 
   const fetchWatchlist = async () => {
     // Fetch all columns including metrics from Python script
-    const { data, error } = await supabase.from('watchlist').select('*');
+    const { data, error } = await supabase
+      .from('watchlist')
+      .select('*')
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching watchlist:', error);
@@ -850,21 +853,21 @@ export default function Watchlist() {
           )}
           {activeTab === 'growth'
             ? watchlist.map((symbol) => (
-                <WatchlistCard
-                  key={symbol}
-                  symbol={symbol}
-                  onRemove={removeFromWatchlist}
-                  onClick={setSelectedStock}
-                />
-              ))
+              <WatchlistCard
+                key={symbol}
+                symbol={symbol}
+                onRemove={removeFromWatchlist}
+                onClick={setSelectedStock}
+              />
+            ))
             : watchlist.map((symbol) => (
-                <RiskParityCard
-                  key={symbol}
-                  symbol={symbol}
-                  onRemove={removeFromWatchlist}
-                  supabaseData={watchlistData[symbol]}
-                />
-              ))}
+              <RiskParityCard
+                key={symbol}
+                symbol={symbol}
+                onRemove={removeFromWatchlist}
+                supabaseData={watchlistData[symbol]}
+              />
+            ))}
         </div>
       </main>
 

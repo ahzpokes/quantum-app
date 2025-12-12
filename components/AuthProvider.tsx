@@ -32,18 +32,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Check active session
-    const checkSession = async () => {
+    // Check active session on mount
+    const initSession = async () => {
       try {
         const {
           data: { session },
         } = await supabase.auth.getSession();
         setUser(session?.user ?? null);
-
-        // Redirect to login if not authenticated and not already on login page
-        if (!session && pathname !== '/login') {
-          router.push('/login');
-        }
       } catch (error) {
         console.error('Error checking session:', error);
       } finally {
@@ -51,25 +46,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
 
-    checkSession();
+    initSession();
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
-
-      if (event === 'SIGNED_IN') {
-        router.push('/');
-      } else if (event === 'SIGNED_OUT') {
-        router.push('/login');
-      }
+      setLoading(false);
+      // Do not force redirect here; let the route protection effect handle it
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [router, pathname]);
+  }, []); // Run only once
+
+  useEffect(() => {
+    if (loading) return;
+
+    // Redirect to login if not authenticated and not already on login page
+    if (!user && pathname !== '/login') {
+      router.push('/login');
+    }
+
+    // Redirect to home if authenticated and on login page
+    if (user && pathname === '/login') {
+      router.push('/');
+    }
+  }, [user, loading, pathname, router]);
 
   const signIn = async (email: string, password: string) => {
     try {

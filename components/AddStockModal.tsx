@@ -46,54 +46,58 @@ const AddStockModal: React.FC<AddStockModalProps> = ({
 
   // Type guard pour la catégorie
   const getValidCategory = (category: string): string => {
-    return category === 'Pilier' || category === 'Opportunity' || category === 'Satellite'
+    return category === 'Pilier' || category === 'Pari' || category === 'Satellite'
       ? category
       : 'Satellite';
   };
 
-  const fetchStockInfo = useCallback(
-    async (symbol: string) => {
-      if (!symbol) {
-        setStockInfo(null);
-        return;
+  const fetchStockData = async (symbol: string): Promise<StockData | null> => {
+    if (!symbol) return null;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const res = await fetch(`/api/quote?symbol=${symbol}`);
+      if (!res.ok) {
+        throw new Error('Erreur lors de la récupération des données du titre');
       }
 
-      try {
-        setLoading(true);
-        setError(null);
-
-        const res = await fetch(`/api/quote?symbol=${symbol}`);
-        if (!res.ok) {
-          throw new Error('Erreur lors de la récupération des données du titre');
-        }
-
-        const data = await res.json();
-        if (data.error) {
-          throw new Error(data.error);
-        }
-
-        setStockInfo(data);
-
-        // Mettre à jour le prix actuel si c'est une nouvelle entrée
-        if (!initialData && data.price) {
-          setFormData((prev) => ({
-            ...prev,
-            price: data.price.toString(),
-          }));
-        }
-      } catch (err) {
-        console.error('Error fetching stock info:', err);
-        setError(
-          err instanceof Error ? err.message : 'Erreur lors de la récupération des données du titre'
-        );
-        setStockInfo(null);
-      } finally {
-        setLoading(false);
+      const data = await res.json();
+      if (data.error) {
+        throw new Error(data.error);
       }
-    },
-    [initialData]
-  );
 
+      return data;
+    } catch (err) {
+      console.error('Error fetching stock info:', err);
+      setError(
+        err instanceof Error ? err.message : 'Erreur lors de la récupération des données du titre'
+      );
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleManualSearch = async () => {
+    if (!formData.symbol) return;
+    const data = await fetchStockData(formData.symbol);
+    if (data) {
+      setStockInfo(data);
+      // Mettre à jour le prix actuel si c'est une nouvelle entrée et que le prix n'est pas déjà défini
+      if (!initialData && data.price) {
+        setFormData((prev) => ({
+          ...prev,
+          price: data.price.toString(),
+        }));
+      }
+    } else {
+      setStockInfo(null);
+    }
+  };
+
+  // Initial load effect
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -105,28 +109,27 @@ const AddStockModal: React.FC<AddStockModalProps> = ({
       });
 
       // Fetch stock info for the initial data
-      fetchStockInfo(initialData.symbol);
+      // For editing, we might want to fetch to get latest price/logo, but maybe not block interaction?
+      // Keeping it auto-fetch on open for edit is usually fine/expected to verify current stats.
+      fetchStockData(initialData.symbol).then(data => setStockInfo(data));
     } else {
       setFormData(DEFAULT_FORM_DATA);
       setStockInfo(null);
     }
-  }, [initialData, isOpen, fetchStockInfo]);
+  }, [initialData, isOpen]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
 
     if (name === 'symbol') {
-      // Mettre à jour le symbole en majuscules
       const upperValue = value.toUpperCase();
       setFormData((prev) => ({
         ...prev,
         [name]: upperValue,
       }));
 
-      // Si le symbole change, récupérer les informations du titre
-      if (upperValue.length >= 1 && upperValue !== formData.symbol) {
-        fetchStockInfo(upperValue);
-      } else if (upperValue === '') {
+      // Reset stock info if symbol changes significantly to avoid mismatch
+      if (stockInfo && upperValue !== stockInfo.symbol) {
         setStockInfo(null);
       }
     } else {
@@ -154,12 +157,18 @@ const AddStockModal: React.FC<AddStockModalProps> = ({
     setError(null);
 
     try {
-      // Build stockData with fields expected by handleAddStock in portefeuille/page.js
+      // Ensure we have stock data either from manual search or fetch now
+      let currentStockInfo = stockInfo;
+      if (!currentStockInfo || currentStockInfo.symbol !== formData.symbol) {
+        currentStockInfo = await fetchStockData(formData.symbol);
+      }
+
+      // Build stockData
       const stockData = {
         // Include id for updates
         id: initialData?.id,
         symbol: formData.symbol,
-        name: stockInfo?.name || formData.symbol,
+        name: currentStockInfo?.name || formData.symbol, // Use fetched name or fall back to symbol
         // Use qty/price/target naming expected by handleAddStock
         qty: formData.qty,
         price: formData.price,
@@ -167,13 +176,13 @@ const AddStockModal: React.FC<AddStockModalProps> = ({
         // Also include shares/buyPrice for compatibility
         shares: parseFloat(formData.qty),
         buyPrice: parseFloat(formData.price),
-        currentPrice: stockInfo?.price || parseFloat(formData.price),
+        currentPrice: currentStockInfo?.price || parseFloat(formData.price),
         targetPercent: formData.target ? parseFloat(formData.target) : undefined,
-        beta: stockInfo?.beta,
-        sector: stockInfo?.sector,
-        industry: stockInfo?.industry,
+        beta: currentStockInfo?.beta,
+        sector: currentStockInfo?.sector,
+        industry: currentStockInfo?.industry,
         category: getValidCategory(formData.category),
-        logo: stockInfo?.image,
+        logo: currentStockInfo?.image,
         created_at: new Date().toISOString(),
       };
 
@@ -279,7 +288,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({
               >
                 <option value="Pilier">Pilier</option>
                 <option value="Satellite">Satellite</option>
-                <option value="Opportunity">Opportunité</option>
+                <option value="Pari">Pari</option>
               </select>
             </div>
 

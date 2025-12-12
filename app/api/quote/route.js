@@ -51,6 +51,17 @@ export async function GET(request) {
       calculatedPeg = summary.trailingPE / (earningsGrowth * 100);
     }
 
+    // Helper to get logo from website
+    let logoUrl = '';
+    if (profile.website) {
+      try {
+        const hostname = new URL(profile.website).hostname;
+        logoUrl = `https://logo.clearbit.com/${hostname}`;
+      } catch (e) {
+        // ignore invalid urls
+      }
+    }
+
     const data = {
       symbol: symbol.toUpperCase(),
       name: price.longName || price.shortName,
@@ -67,6 +78,7 @@ export async function GET(request) {
       sector: profile.sector,
       industry: profile.industry,
       description: profile.longBusinessSummary,
+      image: logoUrl, // Add logo URL here
       earnings:
         formattedEarnings.length > 0
           ? formattedEarnings
