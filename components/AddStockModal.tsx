@@ -111,7 +111,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({
       // Fetch stock info for the initial data
       // For editing, we might want to fetch to get latest price/logo, but maybe not block interaction?
       // Keeping it auto-fetch on open for edit is usually fine/expected to verify current stats.
-      fetchStockData(initialData.symbol).then(data => setStockInfo(data));
+      fetchStockData(initialData.symbol).then((data) => setStockInfo(data));
     } else {
       setFormData(DEFAULT_FORM_DATA);
       setStockInfo(null);

@@ -89,6 +89,15 @@ export async function GET(request) {
     return NextResponse.json(data);
   } catch (err) {
     console.error(`Error fetching quote for ${symbol}:`, err);
+
+    // Yahoo Finance throws "internal-error" for invalid symbols often
+    if (err.message === 'internal-error' || err.message.includes('Not Found')) {
+      return NextResponse.json(
+        { error: `Symbole "${symbol}" introuvable ou indisponible.` },
+        { status: 404 }
+      );
+    }
+
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

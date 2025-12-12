@@ -17,7 +17,11 @@ const WatchlistCard = ({ symbol, onRemove, onClick }) => {
         const res = await fetch(`/api/quote?symbol=${symbol}`);
         const yahooData = await res.json();
 
-        if (yahooData.error) throw new Error(yahooData.error);
+        if (yahooData.error) {
+          // Instead of throwing, handle it gracefully
+          setData({ error: yahooData.error });
+          return;
+        }
 
         // Optional: Fetch Logo from Finnhub if needed (Yahoo doesn't always provide it)
         let logo = null;
@@ -58,6 +62,7 @@ const WatchlistCard = ({ symbol, onRemove, onClick }) => {
         });
       } catch (err) {
         console.error(err);
+        setData({ error: 'Erreur technique' });
       } finally {
         setLoading(false);
       }
@@ -79,6 +84,38 @@ const WatchlistCard = ({ symbol, onRemove, onClick }) => {
         <i className="fas fa-spinner fa-spin" style={{ color: 'var(--gray)' }}></i>
       </div>
     );
+
+  // Handle Error State
+  if (data?.error) {
+    return (
+      <div className="summary-card" style={{
+        minHeight: '200px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative'
+      }}>
+        <button
+          onClick={() => onRemove(symbol)}
+          style={{
+            position: 'absolute',
+            top: '10px',
+            right: '10px',
+            border: 'none',
+            background: 'none',
+            color: 'var(--danger)',
+            cursor: 'pointer',
+          }}
+        >
+          <i className="fas fa-times"></i>
+        </button>
+        <i className="fas fa-exclamation-triangle" style={{ color: 'var(--danger)', fontSize: '24px', marginBottom: '10px' }}></i>
+        <div style={{ fontWeight: 600 }}>{symbol}</div>
+        <div style={{ fontSize: '12px', color: 'var(--gray)', textAlign: 'center' }}>{data.error}</div>
+      </div>
+    )
+  }
 
   if (!data) return null;
 
@@ -729,7 +766,7 @@ export default function Watchlist() {
 
     if (!watchlist.includes(symbol)) {
       // Optimistic update
-      setWatchlist([...watchlist, symbol]);
+      setWatchlist([symbol, ...watchlist]);
 
       const { error } = await supabase.from('watchlist').insert([{ symbol }]);
 

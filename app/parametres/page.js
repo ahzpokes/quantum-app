@@ -49,6 +49,45 @@ export default function Parametres() {
             Mettre à jour les données
           </button>
         </div>
+
+        <div
+          style={{
+            background: 'var(--card-bg)',
+            padding: '30px',
+            borderRadius: '12px',
+            border: 'var(--border)',
+            maxWidth: '600px',
+            marginTop: '20px',
+          }}
+        >
+          <h3 style={{ marginBottom: '20px', fontSize: '16px' }}>Analyse Risk Parity (GitHub)</h3>
+          <p style={{ fontSize: '13px', color: 'var(--gray)', marginBottom: '20px' }}>
+            Déclencher manuellement le script Python "Risk Parity" via GitHub Actions.
+            Cela mettra à jour les métriques avancées (Volatilité, Momentum, etc.).
+          </p>
+          <button
+            className="btn btn-primary"
+            style={{ background: 'var(--primary)', borderColor: 'var(--primary)' }}
+            onClick={async () => {
+              if (
+                !confirm('Lancer l\'analyse Risk Parity sur GitHub ? Cela prendra environ 1-2 minutes.')
+              )
+                return;
+              try {
+                const res = await fetch('/api/github/dispatch-risk-parity', { method: 'POST' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Erreur inconnue');
+                alert(data.message || 'Action déclenchée !');
+              } catch (err) {
+                console.error(err);
+                alert(`Erreur : ${err.message}`);
+              }
+            }}
+          >
+            <i className="fas fa-play" style={{ marginRight: '8px' }}></i>
+            Lancer l'analyse
+          </button>
+        </div>
       </main>
     </div>
   );
